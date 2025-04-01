@@ -1,0 +1,1 @@
+traefik --configFile=./traefik/config.yaml

@@ -1,0 +1,27 @@
+log:
+  level: TRACE
+accesslog:
+  addInternals: true
+api:
+  insecure: true
+  dashboard: true
+
+entryPoints:
+  traefik: #dashboard, api
+    address: :7060
+  web:
+    address: :7070
+    asDefault: true
+    observability:
+      accessLogs: true
+      tracing: true
+      metrics: true
+metrics:
+  prometheus:
+    addEntryPointsLabels: true
+
+providers:
+  file:
+    filename: "./traefik/routes.yaml"
+    debugLogGeneratedTemplate: true
+    watch: true
