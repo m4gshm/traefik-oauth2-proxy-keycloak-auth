@@ -11,7 +11,7 @@ http:
         frameDeny: true
     oauth-auth-redirect:
       forwardAuth:
-        address: http://oauth2-proxy:4180
+        address: http://localhost:4180
         trustForwardHeader: true
         authResponseHeaders:
           - "Authorization"
@@ -23,11 +23,11 @@ http:
     oauth-backend:
       loadBalancer:
         servers:
-          - url: http://oauth2-proxy:4180
+          - url: http://localhost:4180
     "8080":
       loadBalancer:
         servers:
-          - url: http://httpbin:80
+          - url: http://localhost:8080
   routers:
     services-oauth2-route:
       rule: "PathPrefix(`/oauth2/`)"

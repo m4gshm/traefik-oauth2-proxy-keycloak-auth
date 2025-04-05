@@ -1,3 +1,3 @@
-# traefik-forward-auth
+# traefik-oauth2-proxy-keycloak-auth
 
-Example of traefik + oauth2-proxy + keycloak authentification solution.
+Traefik + oauth2-proxy + keycloak authentification example.

@@ -12,9 +12,9 @@ upstreams="static://202"
 
 #Keycloak
 provider="keycloak-oidc"
-oidc_issuer_url="http://traefik-forward-auth-keycloak:8080/realms/master"
+oidc_issuer_url="http://localhost:8082/realms/master"
 client_id = "oauth2-proxy"
-client_secret = "E6sFFm10m7X2AHuwJnTaEWznBwA47yBP"
+client_secret = "YNdceTpnG3Dvzuk65AG6Pk1YIlcxtcZN"
 cookie_secret = "F5IF7kNO3oc2MnPsY1k02GpVD6NTMQLWjZ_eyxdTFPg="
 email_domains="*"
 oidc_extra_audiences=["account"]
