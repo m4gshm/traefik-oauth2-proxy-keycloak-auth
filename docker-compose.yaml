@@ -1,0 +1,85 @@
+volumes: 
+  traefik-oauth2-proxy-keycloak-auth-keycloakdb-data:
+
+services:
+  traefik:
+    image: "traefik:v3.3.5"
+    hostname: traefik
+    network_mode: host
+    volumes:
+      - "./traefik:/traefik"
+    command:
+      - "--configFile=/traefik/config.yaml"
+    ports:
+      - "7060:7060"
+      - "7070:7070"
+    depends_on:
+      - oauth2-proxy
+      - httpbin
+
+  httpbin:
+    image: kennethreitz/httpbin
+    ports:
+      - 8080:80
+
+  oauth2-proxy:
+    image: quay.io/oauth2-proxy/oauth2-proxy:v7.8.2
+    hostname: oauth2-proxy
+    network_mode: host
+    command: --config /oauth2-proxy/config.toml
+    volumes:
+      - "./oauth2-proxy:/oauth2-proxy"
+    ports:
+      - 4180:4180
+    depends_on:
+      keycloak:
+        condition: service_healthy
+
+  keycloakdb:
+    image: postgres:16.2-alpine
+    hostname: traefik-oauth2-proxy-keycloak-auth-keycloakdb
+    network_mode: host
+    environment:
+        - POSTGRES_DB=keycloak
+        - POSTGRES_USER=keycloak
+        - POSTGRES_PASSWORD=keycloak
+    volumes:
+      - traefik-oauth2-proxy-keycloak-auth-keycloakdb-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "-U", "keycloak", "--quiet"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0
+    hostname: traefik-oauth2-proxy-keycloak-auth-keycloak
+    network_mode: host
+    environment:
+      - KC_HOSTNAME_STRICT=false
+      - KC_DB=postgres
+      - KC_DB_URL=jdbc:postgresql://localhost:5432/keycloak
+      - KC_DB_USERNAME=keycloak
+      - KC_DB_PASSWORD=password
+      - KC_DB_SCHEMA=public
+      # - KC_HOSTNAME=localhost:8082
+      - KC_LOG_LEVEL=info
+      - KC_FEATURES=docker
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+      # - KC_PROXY=edge
+    ports:
+      - "8082:8082"  
+    entrypoint: [
+      "/opt/keycloak/bin/kc.sh", "start-dev", "--health-enabled=true",
+      "--http-port=8082"
+    ]
+    depends_on:
+      keycloakdb:
+        condition: service_healthy
+    healthcheck:
+        test: ['CMD-SHELL', '[ -f /tmp/HealthCheck.java ] || echo "public class HealthCheck { public static void main(String[] args) throws java.lang.Throwable { System.exit(java.net.HttpURLConnection.HTTP_OK == ((java.net.HttpURLConnection)new java.net.URL(args[0]).openConnection()).getResponseCode() ? 0 : 1); } }" > /tmp/HealthCheck.java && java /tmp/HealthCheck.java http://localhost:8082/health/live']
+        start_period: 40s
+        interval: 10s
+        timeout: 5s
+        retries: 5

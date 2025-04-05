@@ -22,6 +22,6 @@ metrics:
 
 providers:
   file:
-    filename: "/traefik/routes.yaml"
+    filename: "./traefik/routes.yaml"
     debugLogGeneratedTemplate: true
     watch: true
